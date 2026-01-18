@@ -618,7 +618,7 @@ static bool r_bin_mdmp_init_directory_entry(struct r_bin_mdmp_obj *obj, struct m
 
 		obj->streams.memories64.base_rva = memory64_list.base_rva;
 		offset = entry->location.rva + sizeof (memory64_list);
-		for (i = 0; i < memory64_list.number_of_memory_ranges && offset < obj->size; i++) {
+		for (i = 0; i < memory64_list.number_of_memory_ranges && offset + sizeof (struct minidump_memory_descriptor64) <= obj->size; i++) {
 			struct minidump_memory_descriptor64 *desc = R_NEW (struct minidump_memory_descriptor64);
 			if (!desc) {
 				break;
@@ -1085,15 +1085,15 @@ struct r_bin_mdmp_obj *r_bin_mdmp_new_buf(RBuffer *buf) {
 	obj->kv = sdb_new0 ();
 	obj->size = (ut32) r_buf_size (buf);
 
-	fail |= (!(obj->streams.ex_threads = r_list_new ()));
+	fail |= (!(obj->streams.ex_threads = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.memories = r_list_newf ((RListFree)free)));
-	fail |= (!(obj->streams.memories64.memories = r_list_new ()));
+	fail |= (!(obj->streams.memories64.memories = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.memory_infos = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.modules = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.operations = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.thread_infos = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.token_infos = r_list_newf ((RListFree)free)));
-	fail |= (!(obj->streams.threads = r_list_new ()));
+	fail |= (!(obj->streams.threads = r_list_newf ((RListFree)free)));
 	fail |= (!(obj->streams.unloaded_modules = r_list_newf ((RListFree)free)));
 
 	fail |= (!(obj->pe32_bins = r_list_newf (r_bin_mdmp_free_pe32_bin)));
